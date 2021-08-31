@@ -63,8 +63,8 @@ case "$1" in
 		startfw
 		;;
 	stop)
- 		stopfw
- 		;;
+		stopfw
+		;;
 	restart)
 		checkfw
 		stopfw

@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# Simple script for starting, stoping, restarting and chcecking configuration of nftables.
+
+# Declaration of main variables
+NFT=/usr/sbin/nft
+CONF=/etc/nftables.conf
+
+# Simple verification of main files
+if [ ! -r $NFT ]
+then
+	echo "Binary file $NFT is not readable or missing. Exiting... "
+	exit 1
+fi
+
+if [ ! -r $CONF ]
+then
+	echo "Configuration file $CONF is not readable or missing. Exiting... "
+	exit 1
+fi
+
+# Declaration of main functions
+startfw() {
+	if [ "$CHECKFW" = "1" ]
+	then
+		echo "Configuration in $CONF is bad. Exiting... "
+		exit 1
+	else
+		echo -n "Aplying nftables configuration from $CONF... "
+		$NFT -f $CONF
+		echo "OK"
+	fi
+}
+
+stopfw() {
+	if [ "$CHECKFW" = "1" ]
+	then
+		echo "Configuration in $CONF is bad. Exiting... "
+		exit 1
+	else
+		echo -n "Flushing nftables configuration... "
+		$NFT flush ruleset
+		echo "OK"
+	fi
+}
+
+checkfw() {
+	echo -n "Checking nftables configuration in $CONF... "
+	$NFT -c -f $CONF
+	if [ $? -eq 0 ]
+	then
+		echo "OK"
+	else
+		echo "ERROR!"
+		CHECKFW=1
+	fi
+} 2> /dev/null
+
+# Reasoning part
+case "$1" in
+	start)
+		checkfw
+		startfw
+		;;
+	stop)
+ 		stopfw
+ 		;;
+	restart)
+		checkfw
+		stopfw
+		startfw
+		;;
+	check)
+		checkfw
+		;;
+	*)
+		echo "Usage: firewall start|stop|restart|check"
+		exit 0
+		;;
+esac
